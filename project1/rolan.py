@@ -2,6 +2,9 @@ from typing import Tuple
 import numpy as np
 import matplotlib as plot
 
+def MSE(y,tx,w):
+    loss = ((y-w.dot(tx.T))**2).mean(axis=0)
+    return loss
 
 def least_squares(y : np.array, tx : np.array) -> Tuple[np.array, float]:
     """Least squares implementation using np.linalg.solver for performance reasons.
@@ -41,6 +44,17 @@ def ridge_regression(y : np.array, tx: np.array , lambda_: np.array ) -> Tuple[n
     
     
     return (w, loss)
+
+def logistic_regression(y: np.array, tx: np.array, initial_w: np.array, max_iters: float, gamma: float) -> Tuple[np.array, float]:
+    return reg_logistic_regression(y, tx, 0 , initial_w, max_iters, gamma)
+    
+def sigmoid(x):
+    return(1.0/(np.exp(-x)+1))
+
+def reg_logistic_regression(y: np.array, tx: np.array, lambda_: float , initial_w: np.array, max_iters: float, gamma: float) -> Tuple[np.array, float]:
+    
+    pass
+ 
 
 # Testing:
 if __name__ == "__main__":
