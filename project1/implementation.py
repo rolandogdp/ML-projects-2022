@@ -189,3 +189,20 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """
     w, loss = GD_reg(y, tx, initial_w, max_iters, gamma, reg_logistic_gradient, logistic_loss, lambda_)
     return w, loss
+
+def mim_max_normalize(data):
+    """Return a min max normalization of the data."""
+    return (data - data.min(axis=0)) / (data.max(axis=0) - data.min(axis=0))
+
+def z_normalize(data):
+    """Return a z-normalized version of the data."""
+    return (data - data.mean(axis=0)) / data.std(axis=0)
+
+def quantile_normalize(data, q=0.75):
+    """Return a normalized version of the data using quantiles."""
+    low    = (1-q) / 2
+    high   = 1-low
+    q_low  = np.quantile(data, low,  axis=0)
+    q_high = np.quantile(data, high, axis=0)
+    median = np.quantile(data, 0.5, axis=0)
+    return (data - median) / (q_high - q_low)
