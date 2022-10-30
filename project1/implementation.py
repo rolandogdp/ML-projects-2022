@@ -190,7 +190,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     w, loss = GD_reg(y, tx, initial_w, max_iters, gamma, reg_logistic_gradient, logistic_loss, lambda_)
     return w, loss
 
-def mim_max_normalize(data):
+def min_max_normalize(data):
     """Return a min max normalization of the data."""
     return (data - data.min(axis=0)) / (data.max(axis=0) - data.min(axis=0))
 
@@ -206,3 +206,172 @@ def quantile_normalize(data, q=0.75):
     q_high = np.quantile(data, high, axis=0)
     median = np.quantile(data, 0.5, axis=0)
     return (data - median) / (q_high - q_low)
+
+def accuracy(y, y_pred, alpha=0,true=1,false=0):
+    """Return the accuracy of the model.
+    """
+    pred    = np.where(y_pred > alpha, true, false)
+    correct = np.sum(pred == y)
+    return correct / len(y)
+
+#Data Processing:
+def build_interaction_tx(input_data, normalisation_function=None):
+    """return the input vector tx with interaction terms"""
+    # first normalizing the input data
+    if not normalisation_function is None:
+        input_data = normalisation_function(input_data)
+
+    n_features = input_data.shape[1]
+    n_interacted_features = int((n_features-1) * n_features / 2)
+
+    # creating the future output array
+    x = np.empty((n_features + n_interacted_features, len(input_data)))
+    x[:n_features] = input_data.T
+
+    # adding interaction predictors to the output array
+    index = n_features
+    for i in range(n_features):
+        for j in range(i):
+            x[index] = x[i] * x[j]
+            index = index + 1
+
+    # normalizing the data and adding the bias term
+    x = normalisation_function(x.T)
+    tx = np.append(np.ones(len(x)).reshape(-1,1), x, axis=1)
+
+    return tx
+
+# Test func
+def weighted_logistic_regression(y, tx, initial_w, max_iters, gamma, weights):
+    pass
+
+# K-fold
+class K_fold_Iterator():
+    # iterator code based on https://stackoverflow.com/questions/21665485/how-to-make-a-custom-object-iterable
+    def __init__(self,folds) -> None:
+        self.idx = 0
+        self.folds = folds
+        self.n_splits = len(folds)
+        # self.folds_id = list(range(self.n_splits))
+        
+    def __iter__(self):
+        return self
+    def __next__(self):
+        self.idx +=1
+        if self.idx > self.n_splits:
+            raise StopIteration
+        test_indx = self.folds.pop(0)
+        train_idx = np.concatenate(self.folds)
+        self.folds.append(test_indx)
+        return test_indx,train_idx
+        
+
+class K_fold():
+    def __init__(self,n_splits=5,shuffle=False,random_seed=42) -> None:
+        self.n_splits=n_splits
+        self.shuffle=shuffle
+        self.random_seed=random_seed
+        self.splits = None
+        
+
+
+    def split(self,x,y):
+        if self.splits is None:
+            np.random.seed(self.random_seed)
+            self.x =x 
+            self.y =y
+            if self.shuffle:
+                shuffled_indices = np.arange(0,x.shape[0],1)
+                np.random.shuffle(shuffled_indices)
+                self.splits = np.array_split(shuffled_indices, self.n_splits)
+            else:
+                self.splits = np.array_split(np.arange(0,x.shape[0],1), self.n_splits)
+            
+        return K_fold_Iterator(self.splits)
+        
+    def __iter__(self):
+        if self.splits is None:
+            raise ValueError   
+        return K_fold_Iterator(self.splits)
+
+        
+
+#Baselines:
+
+class Static_model():
+    def __init__(self) -> None:
+        pass
+
+    def fit(self, _, y)-> None:
+        labels,counts =np.unique(y,return_counts=True)
+        self.predominant = labels[np.argmax(counts)]
+
+
+    def predict(self, x):
+        return np.ones(np.shape(x)[0]) * self.predominant
+
+# Models:
+class Logistic_Regression_model():
+    def __init__(self, initial_w, max_iters, gamma) -> None:
+        
+        self.initial_w = initial_w 
+        self.max_iters = max_iters 
+        self.gamma = gamma
+        
+    def fit(self,y, tx)-> None:
+        self.w, self.learning_loss = logistic_regression(y, tx, self.initial_w,self.max_iters, self.gamma)
+        
+    def predict(self,tx) -> np.array :
+        return tx.dot(self.w)
+
+class Regularized_Logistic_Regression_model():
+
+    def __init__(self, lambda_, initial_w, max_iters, gamma) -> None:
+        
+        self.initial_w = initial_w 
+        self.max_iters = max_iters 
+        self.gamma = gamma
+        self.lambda_ = lambda_
+        
+    def fit(self,y, tx)-> None:
+        self.w, self.learning_loss = reg_logistic_regression(y, tx,self.lambda_, self.initial_w,self.max_iters, self.gamma)
+        
+    def predict(self,tx) -> np.array :
+        return tx.dot(self.w)
+
+class locally_weighted_logistic_regression(object): # TODO:
+    
+    def __init__(self, tau, reg = 0.0001, threshold = 1e-6):
+        self.reg = reg
+        self.threshold = threshold
+        self.tau = tau
+        self.w = None
+        self.theta = None
+        self.x = None
+
+    def weights(self, x_train, x):
+        sq_diff = (x_train - x)**2
+        norm_sq = sq_diff.sum(axis = 1)
+        return np.ravel(np.exp(- norm_sq / (2 * self.tau**2)))
+
+    def logistic(self, x_train):
+        return np.ravel(1 / (1 + np.exp(-x_train.dot(self.theta))))
+
+    def train(self, x_train, y_train, x):
+        self.w = self.weights(x_train, x)
+        self.theta = np.zeros(x_train.shape[1])
+        self.x = x
+        gradient = np.ones(x_train.shape[1]) * np.inf
+        while np.linalg.norm(gradient) > self.threshold:
+            # compute gradient
+            h = self.logistic(x_train)
+            gradient = x_train.T.dot(self.w * (np.ravel(y_train) - h)) - self.reg * self.theta
+            # Compute Hessian
+            D = np.diag(-(self.w * h * (1 - h)))
+            H = x_train.T.dot(D).dot(x_train) - self.reg * np.identity(x_train.shape[1])
+            # weight update
+            self.theta = self.theta - np.linalg.inv(H).dot(gradient)
+    
+    def predict(self):
+        return np.array(self.logistic(self.x) > 0.5).astype(int)
+       

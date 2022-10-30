@@ -1,1 +1,4 @@
 project1/.vscode/settings.json
+project1/data-exploration-notebooks/data/sample-submission.csv
+project1/data-exploration-notebooks/data/test.csv
+project1/data-exploration-notebooks/data/train.csv

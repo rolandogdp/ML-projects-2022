@@ -1,0 +1,79 @@
+\documentclass[10pt,conference,compsocconf]{IEEEtran}
+
+\usepackage{hyperref}
+\usepackage{graphicx}	% For figure environment
+\usepackage{todonotes}
+
+\begin{document}
+\title{Project 1: Detecting Higgs boson}
+
+\author{
+  Rolando Grave de Peralta Gonzalez, Maxime Rufer\\
+  \{rolando.gravedeperaltagonzalez, maxime.rufer\}@epfl.ch
+  \\
+  \textit{Department of Computer Science, EPF Lausanne, Switzerland}
+}
+
+\maketitle
+
+\begin{abstract}
+  %TODO : short abstract
+\end{abstract}
+
+\section{Introduction}
+In March 2013, the Large Hadron Collider at CERN announced discovery of the Higgs boson particle. This is an elementary particle in the Standard Model of physics which explains why other particles have mass. The Higgs boson decays rapidly into other particles, this is the reason why it is rather detected by chain of products in which it decays. Scientists call this it's "decay signature". In this report we will be classifying wether a "decay signature" corresponds to that's of a Higgs boson or not.
+\todo{Ajouter? Modif?}
+
+%\section{Related Works}
+
+
+\section{Methods}
+\subsection{Data}
+
+\subsubsection{Exploratory Data Analysis}
+\paragraph{Data Statistical Properties}Before creating baselines and complex models, we explore the given data. When looking at the data we first check for missing or wrongly formatted data. Which we follow by analysing basic statistical properties of our dataset and we see that we have large means, ranging from $\approx -709 $ up to $\approx 210$. We also see that our data has some features with high variance, up to $\approx 658$. \todo{Add plots of mean/std ?}\\
+\paragraph{Class Distribution} When looking at our dataset we can see a big imbalance in the representation of both classes. We have over 164'333 samples that are in class -1 and 85667 which are in class 1. Which means that class -1 corresponds to roughly $65.7\%$ and class 1 to $34.3\%$ of all data. 
+\paragraph{Other?}
+
+\subsubsection{Data Pre-processing \& Engineering}
+\paragraph*{}
+\paragraph{Z-score} Since we have such large  
+\paragraph{}
+\paragraph{Z-score}
+\paragraph{Interaction terms}
+
+\subsection{Evaluation and Baselines}
+
+\section{Models}
+\subsection{Baselines}
+\subsection{Logistic Regression}
+
+
+\section{Results}
+\begin{table}[]
+	\begin{tabular}{lllll}
+		\hline
+		Model&  &  & Test Acc. &Eval. Acc.  \\ \hline
+		Static Model&  &  & 4 &1  \\ \hline
+		1&  &  &3  & 3 \\
+		Logistic Regression&  &  &  3&3  \\ \hline
+	\end{tabular}
+\end{table}
+\subsection{Environment,Implementation and Training Details}
+\subsection{Test Result}
+
+\section{Discussion}
+
+\section{Conclusion}
+
+
+
+
+
+
+
+
+%\bibliographystyle{IEEEtran}
+%\bibliography{literature}
+
+\end{document}
