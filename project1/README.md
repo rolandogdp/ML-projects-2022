@@ -7,6 +7,11 @@
 ## Repo structure:
 You may find the relevent files in the root of the repo:
 - data-exploration-notebooks: In these folders you may find legacy code that helped us analyse and visualize the data
+- data: The folder containing all data for this experiment
+- other: Usefull ressources for the writing of the report.
+- report: Old source code of the report before migrating to overleaf.
+- *.py : Source code files
+- run.py : Main code to run with the methods inside.
 ## Running the code:
 - Make sure to enable you virtual environnement (penv or conda).
 - Make sure to have dependencies (Available in the environement.yml)
