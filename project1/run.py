@@ -117,7 +117,7 @@ def main(config):
 
     # Defining models:
     logistic_regression = implementations.Logistic_Regression_model(
-        initial_w=np.zeros(tx.shape[1]), max_iters=2000, gamma=0.000003
+        initial_w=np.zeros(tx.shape[1]), max_iters=10000, gamma=0.1
     )
     least_squares = implementations.Least_Squares_model()
 
@@ -153,7 +153,7 @@ def main(config):
     )  # Reusing same k_folds for performance and comparability reasons.
 
     logistic_regression = implementations.Logistic_Regression_model(
-        initial_w=np.zeros(tx_z_normalized.shape[1]), max_iters=2000, gamma=0.000003
+        initial_w=np.zeros(tx_z_normalized.shape[1]), max_iters=10000, gamma=0.1
     )
 
     static_model_res = evaluate_model(
