@@ -148,7 +148,6 @@ def sigmoid(t):
 
 def logistic_loss(y, tx, w):
     """Returns the logistic loss at w for input tx and output y"""
-    print(y, tx, w)
     xtw = tx.dot(w)
     loss = np.sum(np.log(1 + np.exp(xtw))) - y.T.dot(xtw)
     return np.squeeze(loss) / y.size
