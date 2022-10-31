@@ -3,7 +3,7 @@ import argparse
 import random
 import pickle
 import helpers
-import implementation
+import implementations
 
 
 def accuracy(y, tx, w):
@@ -37,7 +37,7 @@ def cross_validate_model(
 ):
 
     if k_fold is None:
-        k_fold = implementation.K_fold(k_folds, shuffle=True, random_seed=random_seed)
+        k_fold = implementations.K_fold(k_folds, shuffle=True, random_seed=random_seed)
     accuracies = []
     if has_train_loss:
         train_losses = []
@@ -51,8 +51,8 @@ def cross_validate_model(
         )
         model.fit(x_train, y_train)
         y_pred = model.predict(x_test)
-        implementation.get_and_plot_roc(y_pred,y_test,name="K_fold_"+model.name+str(it),partitions=100)
-        accu = implementation.accuracy(y_test, y_pred,model.alpha)
+        implementations.get_and_plot_roc(y_pred,y_test,name="K_fold_"+model.name+str(it),partitions=100)
+        accu = implementations.accuracy(y_test, y_pred,model.alpha)
         accuracies.append(accu)
         it+=1
         if has_train_loss:
@@ -101,9 +101,9 @@ def main(config):
     print("Preprocessing Data..")
     preprocessing_methods = [
         lambda x: x,
-        implementation.z_normalize,
-        implementation.quantile_normalize,
-        implementation.min_max_normalize,
+        implementations.z_normalize,
+        implementations.quantile_normalize,
+        implementations.min_max_normalize,
     ]
     x = preprocessing_methods[config.preprocessing](input_data)
     tx = np.append(np.ones(len(x)).reshape(-1, 1), x, axis=1)
@@ -113,19 +113,19 @@ def main(config):
     # TODO: add baselines
     # TODO:Ideas: most frequent class, simple bayesian model Prior? Constant?
     
-    static_model = implementation.Static_model()
+    static_model = implementations.Static_model()
 
     # Defining models:
-    logistic_regression = implementation.Logistic_Regression_model(
+    logistic_regression = implementations.Logistic_Regression_model(
         initial_w=np.zeros(tx.shape[1]), max_iters=2000, gamma=0.000003
     )
-    least_squares = implementation.Least_Squares_model()
+    least_squares = implementations.Least_Squares_model()
 
     # Cross validating models:
 
     print("Crossvalidating Models..")
     # With default non processed data
-    k_fold = implementation.K_fold(
+    k_fold = implementations.K_fold(
         5
     )  # Reusing same k_folds for performance and comparability reasons.
 
@@ -146,13 +146,13 @@ def main(config):
 
     # With Z-score processed data:
     print("Cross Validation With Z-score processed data")
-    tx_z_normalized = implementation.z_normalize(tx)
+    tx_z_normalized = implementations.z_normalize(tx)
 
-    k_fold_normalized = implementation.K_fold(
+    k_fold_normalized = implementations.K_fold(
         5
     )  # Reusing same k_folds for performance and comparability reasons.
 
-    logistic_regression = implementation.Logistic_Regression_model(
+    logistic_regression = implementations.Logistic_Regression_model(
         initial_w=np.zeros(tx_z_normalized.shape[1]), max_iters=2000, gamma=0.000003
     )
 
@@ -178,15 +178,15 @@ def main(config):
 
     # With Interaction Matrix:
     print("Cross Validation With Interaction Matrix this time:")
-    tx_interactions = implementation.build_interaction_tx(
-        input_data, implementation.z_normalize
+    tx_interactions = implementations.build_interaction_tx(
+        input_data, implementations.z_normalize
     )
 
-    k_fold_interactions = implementation.K_fold(
+    k_fold_interactions = implementations.K_fold(
         5
     )  # Reusing same k_folds for performance and comparability reasons.
 
-    logistic_regression = implementation.Logistic_Regression_model(
+    logistic_regression = implementations.Logistic_Regression_model(
         initial_w=np.zeros(tx_interactions.shape[1]), max_iters=2000, gamma=0.000003
     )
 
@@ -225,7 +225,7 @@ def main(config):
 
     #TODO: Uncomment code below
     # print("Running Cross validation on best model ")
-    # best_model = implementation.Logistic_Regression_model(
+    # best_model = implementations.Logistic_Regression_model(
     #     initial_w=np.zeros(tx_interactions.shape[1]), max_iters=8000, gamma=0.0000005
     # )
     # best_model_res = evaluate_model(
@@ -245,7 +245,7 @@ def main(config):
 
     except (OSError, IOError) as e:
         print("Best model pickle unavailable, creating new one")
-        best_model_1 = implementation.Logistic_Regression_model(
+        best_model_1 = implementations.Logistic_Regression_model(
             initial_w=np.zeros(tx_interactions.shape[1]), max_iters=8000, gamma=0.0000005
         )
         best_model_1.name = "Best_model"
@@ -261,18 +261,19 @@ def main(config):
     tains_accs = []
     alphas = list(np.arange(0,1,0.1))
     for alpha in alphas:
-        train_acc = implementation.accuracy(y_train_pred,y,alpha=alpha)
+        train_acc = implementations.accuracy(y_train_pred,y,alpha=alpha)
+        print(f"train_acc = {train_acc} with alpha = {alpha} ")
         tains_accs.append(train_acc)
     print(f"Training accuracy of Best model mean:{np.mean(tains_accs)}\
          and we have max accuracy of { tains_accs[np.argmax(tains_accs)]} with alpha= { alphas[np.argmax(tains_accs)]}")
-    implementation.get_and_plot_roc(y_train_pred,y,name="Best_model_traindata",partitions=100)
+    implementations.get_and_plot_roc(y_train_pred,y,name="Best_model_traindata",partitions=100)
 
     print("Loading Leaderboard test data")
     _, input_data_test, ids_test = helpers.load_csv_data("./data/test.csv")
     # creating classification vector y that fits for logistic regression
 
-    tx_test = implementation.build_interaction_tx(
-        input_data_test, implementation.z_normalize
+    tx_test = implementations.build_interaction_tx(
+        input_data_test, implementations.z_normalize
     )
 
     print("Learning Leaderboard test data")
@@ -310,7 +311,7 @@ if __name__ == "__main__":
         "--preprocessing",
         type=int,
         default=0,
-        help="Index from : [implementation.z_normalize,implementation.quantile_normalize,implementation.min_max_normalize]",
+        help="Index from : [implementations.z_normalize,implementations.quantile_normalize,implementations.min_max_normalize]",
     )
     parser.add_argument(
         "--train_val_ratio",

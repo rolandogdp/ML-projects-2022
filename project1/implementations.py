@@ -1,5 +1,5 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 def GD(y, tx, initial_w, max_iters, gamma, gradient_func, loss_func):
     """The general Gradient Descent (GD) algorithm."""
@@ -148,7 +148,6 @@ def sigmoid(t):
 
 def logistic_loss(y, tx, w):
     """Returns the logistic loss at w for input tx and output y"""
-    print(y, tx, w)
     xtw = tx.dot(w)
     loss = np.sum(np.log(1 + np.exp(xtw))) - y.T.dot(xtw)
     return np.squeeze(loss) / y.size
@@ -289,6 +288,67 @@ def balance_classe(y, shuffle=False, seed=42):
 def weighted_logistic_regression(y, tx, initial_w, max_iters, gamma, weights):
     pass
 
+def true_false_positive(y_pred, y_test):
+    #source:  https://towardsdatascience.com/roc-curve-and-auc-from-scratch-in-numpy-visualized-2612bb9459ab
+    #TODO: Adapt and optimize
+    true_positive = np.equal(y_pred, 1) & np.equal(y_test, 1)
+    true_negative = np.equal(y_pred, 0) & np.equal(y_test, 0)
+    false_positive = np.equal(y_pred, 1) & np.equal(y_test, 0)
+    false_negative = np.equal(y_pred, 0) & np.equal(y_test, 1)
+
+    tpr = true_positive.sum() / (true_positive.sum() + false_negative.sum())
+    fpr = false_positive.sum() / (false_positive.sum() + true_negative.sum())
+
+    tnr = true_negative.sum() / (true_negative.sum() + false_positive.sum())
+    fnr = false_negative.sum() / (false_negative.sum() + true_positive.sum())
+    return tpr, fpr, tnr,fnr
+
+def roc_from_scratch(y_pred, y_test, partitions=100):
+        #source:  https://towardsdatascience.com/roc-curve-and-auc-from-scratch-in-numpy-visualized-2612bb9459ab
+
+    roc = np.array([])
+    for i in range(partitions + 1):
+        
+        threshold_vector = np.greater_equal(y_pred, i / partitions).astype(int)
+        tpr, fpr, tnr,fnr = true_false_positive(threshold_vector, y_test)
+        roc = np.append(roc, [fpr, tpr, tnr,fnr])
+        
+    return roc.reshape(-1, 4)
+def auc(roc,partitions,i=0):
+    #source:  https://towardsdatascience.com/roc-curve-and-auc-from-scratch-in-numpy-visualized-2612bb9459ab
+
+    rectangle_roc = 0
+    for k in range(partitions):
+            rectangle_roc = rectangle_roc + (roc[k, i] - roc[k+1, i]) * roc[k, i+1]
+    return rectangle_roc
+def plot_scatter(roc,auc=None,id=0,name="test"):
+    #source:  https://towardsdatascience.com/roc-curve-and-auc-from-scratch-in-numpy-visualized-2612bb9459ab
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    fig.suptitle(f' ROC Curve of {name} with auc:{auc}')
+    ax1.scatter(roc[:,0],roc[:,1])
+    
+    ax1.set_xlabel('False Positive Rate')
+    ax1.set_ylabel('True Positive Rate')
+
+    ax2.scatter(roc[:,2],roc[:,3])
+    
+    ax2.set_xlabel('False Negative Rate') 
+    ax2.set_ylabel('True Negative Rate')
+
+    plt.ioff()
+    fig.savefig("./out/images/"+name+".png")
+    plt.close()
+
+def get_and_plot_roc(y_pred,y_test,name="", partitions=100):
+    
+    roc = roc_from_scratch(y_pred, y_test, partitions=100)
+    auc_roc = auc(roc,partitions)
+    print(f"Model {name} has auc: {auc_roc}")
+    plot_scatter(roc,auc=auc_roc,name=name)
+
+
+
+
 
 # K-fold
 class K_fold_Iterator:
@@ -344,7 +404,7 @@ class K_fold:
 
 class Static_model:
     name = "Static model"
-
+    alpha=0.5
     def __init__(self) -> None:
         pass
 
@@ -360,6 +420,7 @@ class Static_model:
 # Models:
 class Least_Squares_model:
     name = "Least Squares"
+    alpha = 0.35
 
     def __init__(self) -> None:
         pass
@@ -373,6 +434,7 @@ class Least_Squares_model:
 
 class Logistic_Regression_model:
     name = "Logistic Regression"
+    alpha = 0.5
 
     def __init__(self, initial_w, max_iters, gamma) -> None:
 
