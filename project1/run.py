@@ -6,13 +6,6 @@ import helpers
 import implementations
 
 
-def accuracy(y, tx, w):
-    """Return the accuracy of the model."""
-    pred = np.where(tx.dot(w) > 0, 1, 0)
-    correct = np.sum(pred == y)
-    return correct / len(y)
-
-
 def build_test_train(y, tx, ratio=0.9, seed=42):
     """Split the dataset (y, tx) into training/testing set according to the split ratio"""
     # performing permutation before splitting the dataset
@@ -51,7 +44,7 @@ def cross_validate_model(
         )
         model.fit(x_train, y_train)
         y_pred = model.predict(x_test)
-        implementations.get_and_plot_roc(y_pred,y_test,name="K_fold_"+model.name+str(it),partitions=100)
+        # implementations.get_and_plot_roc(y_pred,y_test,name="K_fold_"+model.name+str(it),partitions=100) # For roc calculations, very verbose
         accu = implementations.accuracy(y_test, y_pred,model.alpha)
         accuracies.append(accu)
         it+=1
@@ -110,39 +103,47 @@ def main(config):
 
     print("Creating Models..")
     # Baseline models
-    # TODO: add baselines
-    # TODO:Ideas: most frequent class, simple bayesian model Prior? Constant?
-    
+   
     static_model = implementations.Static_model()
 
     # Defining models:
-    logistic_regression = implementations.Logistic_Regression_model(
+    logistic_regression_basic = implementations.Logistic_Regression_model(
+        initial_w=np.zeros(tx.shape[1]), max_iters=800, gamma=0.1
+    )
+
+    logistic_regression_opti = implementations.Logistic_Regression_model(
         initial_w=np.zeros(tx.shape[1]), max_iters=10000, gamma=0.1
     )
+
+
+    
+
     least_squares = implementations.Least_Squares_model()
 
     # Cross validating models:
-
+    
     print("Crossvalidating Models..")
     # With default non processed data
     k_fold = implementations.K_fold(
         5
     )  # Reusing same k_folds for performance and comparability reasons.
-
+    print("Baselines")
     static_model_res = evaluate_model(
         static_model, tx, y, k_fold=k_fold, name="static model", has_train_loss=False
     )
+
     logistic_regression_res = evaluate_model(
-        logistic_regression,
+        logistic_regression_basic,
         tx,
         y,
         k_fold=k_fold,
-        name="logistic regression",
+        name="logistic regression basic",
         has_train_loss=True,
     )
     least_squares_res = evaluate_model(
         least_squares, tx, y, k_fold=k_fold, name="least squares", has_train_loss=True
     )
+
 
     # With Z-score processed data:
     print("Cross Validation With Z-score processed data")
@@ -152,21 +153,19 @@ def main(config):
         5
     )  # Reusing same k_folds for performance and comparability reasons.
 
-    logistic_regression = implementations.Logistic_Regression_model(
-        initial_w=np.zeros(tx_z_normalized.shape[1]), max_iters=10000, gamma=0.1
-    )
-
+    
     static_model_res = evaluate_model(
         static_model, tx_z_normalized, y, k_fold=k_fold_normalized, name="static model"
     )
     logistic_regression_res = evaluate_model(
-        logistic_regression,
+        logistic_regression_basic,
         tx_z_normalized,
         y,
         k_fold=k_fold_normalized,
-        name="logistic regression",
+        name="logistic regression basic",
         has_train_loss=True,
     )
+    
     least_squares_res = evaluate_model(
         least_squares,
         tx_z_normalized,
@@ -181,15 +180,20 @@ def main(config):
     tx_interactions = implementations.build_interaction_tx(
         input_data, implementations.z_normalize
     )
+    logistic_regression_basic_interactions = implementations.Logistic_Regression_model(
+        initial_w=np.zeros(tx_interactions.shape[1]), max_iters=800, gamma=0.1
+    )
+
+    logistic_regression_opti_interactions = implementations.Logistic_Regression_model(
+        initial_w=np.zeros(tx_interactions.shape[1]), max_iters=10000, gamma=0.1
+    )
 
     k_fold_interactions = implementations.K_fold(
         5
     )  # Reusing same k_folds for performance and comparability reasons.
 
-    logistic_regression = implementations.Logistic_Regression_model(
-        initial_w=np.zeros(tx_interactions.shape[1]), max_iters=2000, gamma=0.000003
-    )
-
+    
+    print("Baselines:")
     static_model_res = evaluate_model(
         static_model,
         tx_interactions,
@@ -198,11 +202,11 @@ def main(config):
         name="static model",
     )
     logistic_regression_res = evaluate_model(
-        logistic_regression,
+        logistic_regression_basic_interactions,
         tx_interactions,
         y,
         k_fold=k_fold_interactions,
-        name="logistic regression",
+        name="logistic regression basic",
         has_train_loss=True,
     )
     least_squares_res = evaluate_model(
@@ -217,17 +221,10 @@ def main(config):
     # Analyzing Model Performances:
     # With default non processed data:
 
-    # Printing:
-
-    # Plotting..?
-    # TODO
     # Running Best model:
 
-    #TODO: Uncomment code below
     print("Running Cross validation on best model ")
-    best_model = implementations.Logistic_Regression_model(
-        initial_w=np.zeros(tx_interactions.shape[1]), max_iters=8000, gamma=0.0000005
-    )
+    best_model = logistic_regression_opti_interactions
     best_model_res = evaluate_model(
         best_model,
         tx_interactions,
@@ -242,30 +239,33 @@ def main(config):
         print("Trying to load best model:")
         best_model_1 = pickle.load(open("./out/best_model_1.pickle", "rb"))
         best_model_1.name = "Best_model"
-
+        print("Loaded best model succesfully!")
     except (OSError, IOError) as e:
         print("Best model pickle unavailable, creating new one")
-        best_model_1 = implementations.Logistic_Regression_model(
-            initial_w=np.zeros(tx_interactions.shape[1]), max_iters=8000, gamma=0.0000005
-        )
+        best_model_1  = implementations.Logistic_Regression_model(
+        initial_w=np.zeros(tx_interactions.shape[1]), max_iters=10000, gamma=0.1
+    )
         best_model_1.name = "Best_model"
         print("Training Best model on full dataset:")
         best_model_1.fit(tx_interactions, y)
 
         pickle.dump(best_model_1, open("./out/best_model_1.pickle", "wb"))
+        print("Saved model to ./out/best_model_1.pickle",)
 
     
     loss = best_model_1.learning_loss
     print(f"Training loss of best: {loss}")
     y_train_pred = best_model_1.predict(tx_interactions)
-    tains_accs = []
-    alphas = list(np.arange(0,1,0.1))
-    for alpha in alphas:
-        train_acc = implementations.accuracy(y_train_pred,y,alpha=alpha)
-        print(f"train_acc = {train_acc} with alpha = {alpha} ")
-        tains_accs.append(train_acc)
-    print(f"Training accuracy of Best model mean:{np.mean(tains_accs)}\
-         and we have max accuracy of { tains_accs[np.argmax(tains_accs)]} with alpha= { alphas[np.argmax(tains_accs)]}")
+    print(implementations.accuracy(y,y_train_pred))
+    # code allowing to find best alpha such that it maximizes accuracy
+    # tains_accs = []
+    # alphas = list(np.arange(0,1,0.1))
+    # for alpha in alphas:
+    #     train_acc = implementations.accuracy(y_train_pred,y,alpha=alpha)
+    #     print(f"train_acc = {train_acc} with alpha = {alpha} ")
+    #     tains_accs.append(train_acc)
+    # print(f"Training accuracy of Best model mean:{np.mean(tains_accs)}\
+    #      and we have max accuracy of { tains_accs[np.argmax(tains_accs)]} with alpha= { alphas[np.argmax(tains_accs)]}")
     implementations.get_and_plot_roc(y_train_pred,y,name="Best_model_traindata",partitions=100)
 
     print("Loading Leaderboard test data")
@@ -287,45 +287,22 @@ def main(config):
     helpers.create_csv_submission(ids_test, y_pred, name)
 
 
-# TODO
-
-# TODO
-#
-
 
 if __name__ == "__main__":
-    # TODO: Clean this arguments, keep only what's neeeded
+    
     parser = argparse.ArgumentParser()
     # General
     parser.add_argument(
         "--seed", type=int, default=42, help="Random number generator seed"
     )  # for randomness; initially None
-    # Run
-    # Data
-    # Model
-    parser.add_argument(
-        "--model_name", type=str, default="", help="Default model name to load"
-    )
-    # Learning args
     parser.add_argument(
         "--preprocessing",
         type=int,
         default=0,
         help="Index from : [implementations.z_normalize,implementations.quantile_normalize,implementations.min_max_normalize]",
     )
-    parser.add_argument(
-        "--train_val_ratio",
-        type=float,
-        default=0.95,
-        help="The training/validation ratio to use for the given dataset",
-    )
-    parser.add_argument("--lr", type=float, default=2e-4, help="Learning rate")
-    parser.add_argument(
-        "--n_epochs", type=int, default=2, help="Number of train epochs"
-    )
-    parser.add_argument(
-        "--k_fold", type=int, default=0, help="Number of folds for K-fold validation "
-    )
+    # add more params if needed below
+
     config = parser.parse_args()
 
     # Reproducibility:

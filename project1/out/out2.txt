@@ -1,0 +1,61 @@
+Loading Data
+Preprocessing Data..
+Creating Models..
+Crossvalidating Models..
+Starting Evaluation of model: static model
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+static model has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Starting Evaluation of model: logistic regression
+/home/user/ethz/semester3-epfl/MachineLearning/ML-projects-2022/project1/implementation.py:145: RuntimeWarning: overflow encountered in exp
+  exp_t = np.exp(t)
+/home/user/ethz/semester3-epfl/MachineLearning/ML-projects-2022/project1/implementation.py:146: RuntimeWarning: invalid value encountered in divide
+  return exp_t / (1 + exp_t)
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+[nan, nan, nan, nan, nan]
+logistic regression Training has mean accuracy: nan +- nan std
+logistic regression Test has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Starting Evaluation of model: least squares
+[0.745875, 0.743685, 0.743665, 0.745445, 0.744]
+[0.17030524819145776, 0.16882229458292844, 0.16897976099978526, 0.16996469871872974, 0.16998709538728293]
+least squares Training has mean accuracy: 0.16961181957603683 +- 0.0005948187332447851 std
+least squares Test has mean accuracy: 0.744534 +- 0.0009369439684420647 std
+Cross Validation With Z-score processed data
+/home/user/ethz/semester3-epfl/MachineLearning/ML-projects-2022/project1/implementation.py:219: RuntimeWarning: invalid value encountered in divide
+  return (data - data.mean(axis=0)) / data.std(axis=0)
+Starting Evaluation of model: static model
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+static model has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Starting Evaluation of model: logistic regression
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+[nan, nan, nan, nan, nan]
+logistic regression Training has mean accuracy: nan +- nan std
+logistic regression Test has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Starting Evaluation of model: least squares
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+[nan, nan, nan, nan, nan]
+least squares Training has mean accuracy: nan +- nan std
+least squares Test has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Cross Validation With Interaction Matrix this time:
+Starting Evaluation of model: static model
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+static model has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Starting Evaluation of model: logistic regression
+[0.79397, 0.79731, 0.797145, 0.79604, 0.79476]
+[20953.486356106972, 20872.809712849525, 20503.42713792584, 20887.004993339542, 20633.44602131663]
+logistic regression Training has mean accuracy: 20770.034844307702 +- 171.83440995216378 std
+logistic regression Test has mean accuracy: 0.795845 +- 0.0013089766995634405 std
+Starting Evaluation of model: least squares
+[0.788795, 0.78785, 0.78924, 0.789995, 0.7881]
+[0.14710160591833607, 0.14663324034218353, 0.14577928520731165, 0.1477308524944465, 0.14739509774287932]
+least squares Training has mean accuracy: 0.14692801634103142 +- 0.0006781327854639119 std
+least squares Test has mean accuracy: 0.7887959999999999 +- 0.0007764109736473238 std
+Running Cross validation on best model 
+Starting Evaluation of model: Best model LogReg
+[0.79145, 0.794315, 0.794275, 0.793345, 0.79193]
+Best model LogReg has mean accuracy: 0.7930629999999999 +- 0.0011833368075066237 std
+Training Best model on full dataset:
+Training loss of best: 103764.32136963788
+Loading Leaderboard test data
+Learning Leaderboard test data
+Predicting:
+Saving Prediction file to ./out/submission.csv

@@ -1,0 +1,47 @@
+Loading Data
+Preprocessing Data..
+Creating Models..
+Crossvalidating Models..
+Starting Evaluation of model: static model
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+static model has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Starting Evaluation of model: logistic regression
+/home/user/ethz/semester3-epfl/MachineLearning/ML-projects-2022/project1/implementation.py:141: RuntimeWarning: overflow encountered in exp
+  exp_t = np.exp(t)
+/home/user/ethz/semester3-epfl/MachineLearning/ML-projects-2022/project1/implementation.py:142: RuntimeWarning: invalid value encountered in divide
+  return exp_t / (1 + exp_t)
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+logistic regression has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Starting Evaluation of model: least squares
+[0.745875, 0.743685, 0.743665, 0.745445, 0.744]
+least squares has mean accuracy: 0.744534 +- 0.0009369439684420647 std
+Cross Validation With Z-score processed data
+/home/user/ethz/semester3-epfl/MachineLearning/ML-projects-2022/project1/implementation.py:199: RuntimeWarning: invalid value encountered in divide
+  return (data - data.mean(axis=0)) / data.std(axis=0)
+Starting Evaluation of model: static model
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+static model has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Starting Evaluation of model: logistic regression
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+logistic regression has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Starting Evaluation of model: least squares
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+least squares has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Cross Validation With Interaction Matrix this time:
+Starting Evaluation of model: static model
+[0.65699, 0.65719, 0.657425, 0.657575, 0.65748]
+static model has mean accuracy: 0.657332 +- 0.00021294600254525265 std
+Starting Evaluation of model: logistic regression
+[0.79397, 0.79731, 0.797145, 0.79604, 0.79476]
+logistic regression has mean accuracy: 0.795845 +- 0.0013089766995634405 std
+Starting Evaluation of model: least squares
+[0.788795, 0.78785, 0.78924, 0.789995, 0.7881]
+least squares has mean accuracy: 0.7887959999999999 +- 0.0007764109736473238 std
+Running Cross validation on best model 
+Starting Evaluation of model: static model
+
+[0.79145, 0.794315, 0.794275, 0.793345, 0.79193]
+static model has mean accuracy: 0.7930629999999999 +- 0.0011833368075066237 std
+Training Best model on full dataset:
+Loading Leaderboard test data
+Predicting Leaderboard test data 

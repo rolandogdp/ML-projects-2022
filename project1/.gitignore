@@ -1,5 +1,5 @@
 data/*
-out/*
+out/images/*.png
 
 
 # Byte-compiled / optimized / DLL files
@@ -101,7 +101,7 @@ ENV/
 *.log
 *.lot
 *.fls
-*.out
+
 *.toc
 *.fmt
 *.fot
