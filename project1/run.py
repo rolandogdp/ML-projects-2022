@@ -224,17 +224,17 @@ def main(config):
     # Running Best model:
 
     #TODO: Uncomment code below
-    # print("Running Cross validation on best model ")
-    # best_model = implementations.Logistic_Regression_model(
-    #     initial_w=np.zeros(tx_interactions.shape[1]), max_iters=8000, gamma=0.0000005
-    # )
-    # best_model_res = evaluate_model(
-    #     best_model,
-    #     tx_interactions,
-    #     y,
-    #     k_fold=k_fold_interactions,
-    #     name="Best model LogReg",
-    # )
+    print("Running Cross validation on best model ")
+    best_model = implementations.Logistic_Regression_model(
+        initial_w=np.zeros(tx_interactions.shape[1]), max_iters=8000, gamma=0.0000005
+    )
+    best_model_res = evaluate_model(
+        best_model,
+        tx_interactions,
+        y,
+        k_fold=k_fold_interactions,
+        name="Best model LogReg",
+    )
 
     # Training on whole dataset:
     
