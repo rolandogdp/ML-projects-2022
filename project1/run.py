@@ -1,8 +1,7 @@
 import numpy as np
-import pandas as pd
 import argparse
 import random
-
+import pickle
 import helpers
 import implementation
 
@@ -42,6 +41,7 @@ def cross_validate_model(
     accuracies = []
     if has_train_loss:
         train_losses = []
+    it = 0
     for train_index, test_index in k_fold.split(x, y):
         x_train, x_test, y_train, y_test = (
             x[train_index],
@@ -51,8 +51,10 @@ def cross_validate_model(
         )
         model.fit(x_train, y_train)
         y_pred = model.predict(x_test)
-        accu = implementation.accuracy(y_test, y_pred)
+        implementation.get_and_plot_roc(y_pred,y_test,name="K_fold_"+model.name+str(it),partitions=100)
+        accu = implementation.accuracy(y_test, y_pred,model.alpha)
         accuracies.append(accu)
+        it+=1
         if has_train_loss:
             train_losses.append(model.learning_loss)
     if has_train_loss:
@@ -109,8 +111,8 @@ def main(config):
     print("Creating Models..")
     # Baseline models
     # TODO: add baselines
-
-    # Ideas: most frequent class, simple bayesian model Prior? Constant?
+    # TODO:Ideas: most frequent class, simple bayesian model Prior? Constant?
+    
     static_model = implementation.Static_model()
 
     # Defining models:
@@ -220,22 +222,51 @@ def main(config):
     # Plotting..?
     # TODO
     # Running Best model:
-    print("Running Cross validation on best model ")
-    best_model = implementation.Logistic_Regression_model(
-        initial_w=np.zeros(tx_interactions.shape[1]), max_iters=8000, gamma=0.0000005
-    )
-    best_model_res = evaluate_model(
-        best_model,
-        tx_interactions,
-        y,
-        k_fold=k_fold_interactions,
-        name="Best model LogReg",
-    )
+
+    #TODO: Uncomment code below
+    # print("Running Cross validation on best model ")
+    # best_model = implementation.Logistic_Regression_model(
+    #     initial_w=np.zeros(tx_interactions.shape[1]), max_iters=8000, gamma=0.0000005
+    # )
+    # best_model_res = evaluate_model(
+    #     best_model,
+    #     tx_interactions,
+    #     y,
+    #     k_fold=k_fold_interactions,
+    #     name="Best model LogReg",
+    # )
 
     # Training on whole dataset:
-    print("Training Best model on full dataset:")
-    w_best, loss = best_model.fit(tx_interactions, y)
+    
+    try:
+        print("Trying to load best model:")
+        best_model_1 = pickle.load(open("./out/best_model_1.pickle", "rb"))
+        best_model_1.name = "Best_model"
+
+    except (OSError, IOError) as e:
+        print("Best model pickle unavailable, creating new one")
+        best_model_1 = implementation.Logistic_Regression_model(
+            initial_w=np.zeros(tx_interactions.shape[1]), max_iters=8000, gamma=0.0000005
+        )
+        best_model_1.name = "Best_model"
+        print("Training Best model on full dataset:")
+        best_model_1.fit(tx_interactions, y)
+
+        pickle.dump(best_model_1, open("./out/best_model_1.pickle", "wb"))
+
+    
+    loss = best_model_1.learning_loss
     print(f"Training loss of best: {loss}")
+    y_train_pred = best_model_1.predict(tx_interactions)
+    tains_accs = []
+    alphas = list(np.arange(0,1,0.1))
+    for alpha in alphas:
+        train_acc = implementation.accuracy(y_train_pred,y,alpha=alpha)
+        tains_accs.append(train_acc)
+    print(f"Training accuracy of Best model mean:{np.mean(tains_accs)}\
+         and we have max accuracy of { tains_accs[np.argmax(tains_accs)]} with alpha= { alphas[np.argmax(tains_accs)]}")
+    implementation.get_and_plot_roc(y_train_pred,y,name="Best_model_traindata",partitions=100)
+
     print("Loading Leaderboard test data")
     _, input_data_test, ids_test = helpers.load_csv_data("./data/test.csv")
     # creating classification vector y that fits for logistic regression
@@ -245,7 +276,7 @@ def main(config):
     )
 
     print("Learning Leaderboard test data")
-    y_test_pred = best_model.predict(tx_test)
+    y_test_pred = best_model_1.predict(tx_test)
 
     print("Predicting:")
     y_pred = np.where(y_test_pred > 0.5, 1, -1)
