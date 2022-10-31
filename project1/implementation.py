@@ -207,7 +207,7 @@ def quantile_normalize(data, q=0.75):
     median = np.quantile(data, 0.5, axis=0)
     return (data - median) / (q_high - q_low)
 
-def accuracy(y, y_pred, alpha=0,true=1,false=0):
+def accuracy(y, y_pred, alpha=0.5,true=1,false=0):
     """Return the accuracy of the model.
     """
     pred    = np.where(y_pred > alpha, true, false)
@@ -236,11 +236,27 @@ def build_interaction_tx(input_data, normalisation_function=None):
             index = index + 1
 
     # normalizing the data and adding the bias term
-    x = normalisation_function(x.T)
+    if not normalisation_function is None:
+        x = normalisation_function(x.T)
+    else: x = x.T
     tx = np.append(np.ones(len(x)).reshape(-1,1), x, axis=1)
 
     return tx
 
+def balance_classe(y,shuffle=False,seed=42):
+    """Returns indices of a random sublist of y, with balanced classes """
+    indices_pos = np.argwhere(y > 0)
+    indices_neg = np.argwhere((y < 0) | (y == 0))
+    max_len = min((len(indices_pos),len(indices_neg)))
+    indices_indices = np.arange(0,max_len,1)
+    if shuffle:
+        np.random.seed(seed)
+        np.random.shuffle(indices_pos)
+        np.random.shuffle(indices_neg)
+    
+    final_indices = np.concatenate((indices_pos[indices_indices],indices_neg[indices_indices]),)
+    return final_indices
+    
 # Test func
 def weighted_logistic_regression(y, tx, initial_w, max_iters, gamma, weights):
     pass
@@ -299,10 +315,12 @@ class K_fold():
 #Baselines:
 
 class Static_model():
+    name="Static model"
     def __init__(self) -> None:
         pass
 
     def fit(self, _, y)-> None:
+
         labels,counts =np.unique(y,return_counts=True)
         self.predominant = labels[np.argmax(counts)]
 
@@ -311,35 +329,47 @@ class Static_model():
         return np.ones(np.shape(x)[0]) * self.predominant
 
 # Models:
+class Least_Squares_model():
+    name="Least Squares"
+    def __init__(self) -> None:
+        pass
+        
+    def fit(self,tx,y)-> None:
+        self.w, self.learning_loss = least_squares(y, tx)
+
+    def predict(self,tx) -> np.array :
+        return tx.dot(self.w)
+
 class Logistic_Regression_model():
+    name="Logistic Regression"
     def __init__(self, initial_w, max_iters, gamma) -> None:
         
         self.initial_w = initial_w 
         self.max_iters = max_iters 
         self.gamma = gamma
         
-    def fit(self,y, tx)-> None:
+    def fit(self,tx,y)-> None:
+        
         self.w, self.learning_loss = logistic_regression(y, tx, self.initial_w,self.max_iters, self.gamma)
         
     def predict(self,tx) -> np.array :
         return tx.dot(self.w)
 
-class Regularized_Logistic_Regression_model():
 
+
+class Regularized_Logistic_Regression_model(Logistic_Regression_model):
+    name="Regularized Logistic Regression"
     def __init__(self, lambda_, initial_w, max_iters, gamma) -> None:
-        
-        self.initial_w = initial_w 
-        self.max_iters = max_iters 
-        self.gamma = gamma
+
+        super().__init__(initial_w, max_iters, gamma)
         self.lambda_ = lambda_
         
-    def fit(self,y, tx)-> None:
+    def fit(self,tx,y)-> None:
         self.w, self.learning_loss = reg_logistic_regression(y, tx,self.lambda_, self.initial_w,self.max_iters, self.gamma)
         
-    def predict(self,tx) -> np.array :
-        return tx.dot(self.w)
 
-class locally_weighted_logistic_regression(object): # TODO:
+class locally_weighted_logistic_regression(object): # TODO: This is taking from online for testing purposes, remove this when done TODO
+
     
     def __init__(self, tau, reg = 0.0001, threshold = 1e-6):
         self.reg = reg
