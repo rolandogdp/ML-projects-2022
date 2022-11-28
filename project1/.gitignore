@@ -110,3 +110,4 @@ ENV/
 *.fdb_latexmk
 *.synctex.gz
 .new-venv
+*.csv
