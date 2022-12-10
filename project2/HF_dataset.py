@@ -45,7 +45,7 @@ class Sentiment(datasets.GeneratorBasedBuilder):
         data = load_dataset("text", data_files="./HF_data.txt")
         data = data.map(_define_columns)
 
-        texts_dataset_clean = data["train"].train_test_split(train_size=0.95, seed=12345)
+        texts_dataset_clean = data["train"].train_test_split(train_size=0.98, seed=12345)
         # Rename the default "test" split to "validation"
         texts_dataset_clean["validation"] = texts_dataset_clean.pop("test")
 
